@@ -7,6 +7,10 @@ CREATE TABLE IF NOT EXISTS sources (
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
 
+-- Modification de la table sources pour ajouter une contrainte UNIQUE sur la colonne url
+ALTER TABLE sources
+ADD CONSTRAINT unique_url UNIQUE (url);
+
 -- Table keywords (utilisée dans main.py)
 CREATE TABLE IF NOT EXISTS keywords (
     id INT AUTO_INCREMENT PRIMARY KEY,

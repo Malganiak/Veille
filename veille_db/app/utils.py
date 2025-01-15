@@ -62,43 +62,30 @@ def get_mongo_client():
 
 @dataclass
 class Page:
-    date: Optional[str]
     title: str
     link: str
-    description: str
     content: str
-    author: Optional[str]
-    image_url: Optional[str]
+    # Ajout de l'attribut 'date'
+    date: Optional[str] = None
 
-def save_page_to_mongodb(page_data: Page):
-    client = get_mongo_client()
-    if not client:
-        print("Impossible de se connecter à MongoDB")
-        return False
-        
+def save_page_to_mongodb(page: Page) -> bool:
     try:
-        db = client["mydb"]
-        collection = db["lab"]
-        data_dict = {
-            "date": page_data.date,
-            "title": page_data.title,
-            "link": page_data.link,
-            "description": page_data.description,
-            "content": page_data.content,
-            "author": page_data.author,
-            "image_url": page_data.image_url,
+        client = get_mongo_client()
+        db = client.veille_db
+        collection = db.pages
+        page_dict = {
+            "title": page.title,
+            "link": page.link,
+            "content": page.content,
+            # Inclusion de 'date' si disponible
+            "date": page.date
         }
-        collection.update_one(
-            {"link": page_data.link},
-            {"$set": data_dict},
-            upsert=True
-        )
+        collection.insert_one(page_dict)
+        client.close()
         return True
     except Exception as e:
-        print(f"Erreur lors de la sauvegarde MongoDB: {e}")
+        print(f"Erreur lors de la sauvegarde MongoDB: {str(e)}")
         return False
-    finally:
-        client.close()
 
 ###############################
 # Fonctions MySQL (Feedback) - inchangées

@@ -1,0 +1,33 @@
+
+[tool.poetry]
+name = "Veille"
+version = "0.1.0"
+description = "Projet de veille stratégique"
+authors = ["Votre Nom <votre.email@example.com>"]
+packages = [{include = "veille_db"}]
+
+[tool.poetry.dependencies]
+python = "^3.12"
+streamlit = "*"
+bs4 = "*"
+python-dotenv = "*"
+pypdf = "*"
+pydantic = "*"
+ollama = "*"
+reportlab = "*"
+pymongo = "*"
+pymysql = "*"
+python-docx = "*"
+sqlalchemy = "*"
+motor = "*"
+fastapi = "*"
+uvicorn = "*"
+requests = "*"
+lxml = "*"
+python-dateutil = "*"
+
+[tool.poetry.group.test.dependencies]
+pytest = "^7.0"
+pytest-cov = "^4.0"
+httpx = "^0.23.0"
+pytest-mock = "^3.0.0"

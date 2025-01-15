@@ -72,14 +72,9 @@ async def save_sources(sources: List[str]):
         conn = get_mysql_connection()
         try:
             with conn.cursor() as cursor:
-                # Supprimer les anciennes sources
-                cursor.execute("TRUNCATE TABLE sources")
-                
-                # Insérer les nouvelles sources
-                if valid_sources:
-                    sql = "INSERT INTO sources (url) VALUES (%s)"
-                    cursor.executemany(sql, [(url,) for url in valid_sources])
-            
+                # Insérer chaque source dans la table 'sources', ignorer les doublons
+                for source in valid_sources:
+                    cursor.execute("INSERT IGNORE INTO sources (url) VALUES (%s)", (source,))
             conn.commit()
             return {"message": "Sources sauvegardées avec succès", "count": len(valid_sources)}
             
@@ -104,8 +99,9 @@ async def get_sources() -> List[str]:
         try:
             with conn.cursor() as cursor:
                 cursor.execute("SELECT url FROM sources")
-                results = cursor.fetchall()
-                return [row['url'] for row in results]
+                rows = cursor.fetchall()
+                sources = [row["url"] for row in rows]
+                return sources
         finally:
             conn.close()
     except Exception as e:
