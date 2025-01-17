@@ -1,0 +1,11 @@
+Metadata-Version: 2.2
+Name: veille_db
+Version: 0.1
+Requires-Dist: fastapi
+Requires-Dist: pytest
+Requires-Dist: requests
+Requires-Dist: pymongo
+Requires-Dist: pymysql
+Requires-Dist: python-dotenv
+Requires-Dist: httpx
+Dynamic: requires-dist

@@ -1,3 +1,1 @@
-"""
-Module app contenant l'application principale
-"""
+# Empty file to mark directory as Python package

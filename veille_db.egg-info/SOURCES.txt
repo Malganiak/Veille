@@ -1,0 +1,7 @@
+pyproject.toml
+setup.py
+veille_db.egg-info/PKG-INFO
+veille_db.egg-info/SOURCES.txt
+veille_db.egg-info/dependency_links.txt
+veille_db.egg-info/requires.txt
+veille_db.egg-info/top_level.txt

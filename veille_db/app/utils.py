@@ -47,7 +47,7 @@ GOOGLE_API_KEY = os.getenv("GOOGLE_API_KEY")
 CSE_ID = os.getenv("CSE_ID")
 
 ###############################
-# Fonctions MongoDB (inchangées)
+# Fonctions MongoDB
 ###############################
 def get_mongo_client():
     mongo_uri = os.getenv("MONGO_URI", "mongodb://mongodb:27017")
@@ -65,8 +65,10 @@ class Page:
     title: str
     link: str
     content: str
-    # Ajout de l'attribut 'date'
     date: Optional[str] = None
+    description: Optional[str] = None  # Add this
+    author: Optional[str] = None      # Add this 
+    image_url: Optional[str] = None   # Add this
 
 def save_page_to_mongodb(page: Page) -> bool:
     try:
@@ -88,7 +90,7 @@ def save_page_to_mongodb(page: Page) -> bool:
         return False
 
 ###############################
-# Fonctions MySQL (Feedback) - inchangées
+# Fonctions MySQL (Feedback) 
 ###############################
 def get_mysql_connection():
     host = os.getenv("MYSQL_HOST", "localhost")
@@ -140,7 +142,7 @@ def save_feedback_to_mysql(data):
         conn.close()
 
 ###############################
-# Fonctions Google Search (inchangées)
+# Fonctions Google Search 
 ###############################
 def google_search(query, num_results=10, languages=None, time_unit=None, time_value=None,
                   exclude_ads=False, exclude_professional=False, target_press=False,
@@ -172,7 +174,7 @@ def google_search(query, num_results=10, languages=None, time_unit=None, time_va
     return urls
 
 ###############################
-# Fonctions de scraping (inchangées)
+# Fonctions de scraping
 ###############################
 def clean_date(date_string: str) -> Optional[str]:
     try:
@@ -263,7 +265,7 @@ def is_valid_image_url(url):
         return False
 
 ###############################
-# Fonctions de génération (inchangées, adaptation Ollama)
+# Fonctions de génération
 ###############################
 def generate_summary(article_text: str, system_prompt: str, user_prompt: str) -> str:
     max_retries = 3
@@ -271,14 +273,13 @@ def generate_summary(article_text: str, system_prompt: str, user_prompt: str) ->
     
     for attempt in range(max_retries):
         try:
-            messages = [
-                {"role": "system", "content": system_prompt},
-                {"role": "user", "content": user_prompt},
-            ]
+            prompt = f"{system_prompt}\n\n{user_prompt}\n\n{article_text}"
             response = ollama.chat(
-                model='llama3.2:3b', # Changez pour llama2 qui est plus stable
-                messages=messages,
-                api_base='http://ollama:11434'  # Spécifiez explicitement l'URL
+                model='llama3.2:3b',
+                messages=[{
+                    "role": "user",
+                    "content": prompt
+                }]
             )
             return response['message']['content']
         except Exception as e:
@@ -289,23 +290,24 @@ def generate_summary(article_text: str, system_prompt: str, user_prompt: str) ->
 
 def generate_answer(question: str, context: str) -> str:
     try:
-        messages = [
-            {
-                "role": "system",
-                "content": "Vous êtes un assistant expert en veille stratégique. Votre tâche est de répondre aux questions basées sur les articles fournis."
-            },
-            {
+        prompt = f"""Vous êtes un assistant expert en veille stratégique. Votre tâche est de répondre aux questions basées sur les articles fournis.
+
+Question : {question}
+Contexte : {context}"""
+
+        response = ollama.chat(
+            model='llama3.2:3b',
+            messages=[{
                 "role": "user",
-                "content": f"Question : {question}\nContexte : {context}"
-            }
-        ]
-        response = ollama.chat(model='llama3.2:3b', messages=messages)
+                "content": prompt
+            }]
+        )
         return response['message']['content']
     except Exception as e:
         return f"Erreur lors de l'appel à l'API : {str(e)}"
 
 ###############################
-# Fonctions de création de PDF (inchangées)
+# Fonctions de création de PDF
 ###############################
 def create_file(summary, article_text, system_prompt, user_prompt, url, title):
     buffer = BytesIO()
@@ -349,7 +351,7 @@ def get_hash(input_data):
 
 ########## Sources ##########
 def load_default_sources():
-    api_url = os.getenv("API_URL", "http://api:8000")
+    api_url = os.getenv("API_URL", "http://localhost:8000")
     max_retries = 3
     retry_delay = 2
 
@@ -371,7 +373,7 @@ def save_default_sources(sources):
         clean_sources = [s.strip() for s in sources if s.strip()]
         
         resp = requests.post(
-            "http://api:8000/sources", 
+            "http://localhost:8000/sources", 
             json=clean_sources,
             timeout=10  # Ajouter un timeout
         )
@@ -388,10 +390,23 @@ def save_default_sources(sources):
     except Exception as e:
         raise Exception(f"Erreur lors de la sauvegarde des sources: {str(e)}")
 
+def get_default_sources():
+    return [
+        "https://www.silvereco.fr/?s=Bien+vieillir",
+        "https://www.lassuranceenmouvement.com/category/actualites/relclients/"
+    ]
+
+def get_default_keywords():
+    return [
+        "Experience client : bonnes pratiques innovantes",
+        "Comment utiliser l'IA au service de l'expérience client",
+        "L'expérience client pour plus de performance"
+    ]
+
 ########## Keywords ##########
 def load_default_keywords():
     try:
-        resp = requests.get("http://api:8000/keywords")  # Modifié
+        resp = requests.get("http://localhost:8000/keywords")  # Modifié
         resp.raise_for_status()
         return resp.json()
     except Exception as e:
@@ -400,14 +415,14 @@ def load_default_keywords():
 
 def save_default_keywords(keywords):
     try:
-        resp = requests.post("http://api:8000/keywords", json=keywords)  # Modifié
+        resp = requests.post("http://localhost:8000/keywords", json=keywords)  # Modifié
         resp.raise_for_status()
     except Exception as e:
         print(f"Erreur lors de la sauvegarde des keywords: {e}")
 
 def load_filters():
     try:
-        resp = requests.get("http://api:8000/filters")  # Modifié
+        resp = requests.get("http://localhost:8000/filters")  # Modifié
         resp.raise_for_status()
         return resp.json()
     except Exception as e:
@@ -427,7 +442,7 @@ def save_filters(filters):
     Sauvegarde l'objet filters (id=1) via l'API (POST /filters).
     """
     try:
-        resp = requests.post("http://127.0.0.1:8000/filters", json=filters)
+        resp = requests.post("http://localhost:8000/filters", json=filters)
         resp.raise_for_status()
     except Exception as e:
         print(f"Erreur lors de la sauvegarde des filters: {e}")

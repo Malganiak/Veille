@@ -1,0 +1,6 @@
+Lancer ollama
+Lancer mysql
+lancer mongodb
+
+python -m uvicorn veille_db.app.main:app --reload --port 8000
+streamlit run app.py

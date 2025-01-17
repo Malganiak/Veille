@@ -1,7 +1,13 @@
 # tests/test_utils.py
 
 import pytest
-from veille_db.app.utils import scrape_page, get_mysql_connection, get_mongo_client, save_page_to_mongodb, Page
+from veille_db.app.utils import (
+    scrape_page, 
+    get_mysql_connection,
+    get_mongo_client,
+    save_page_to_mongodb,
+    Page
+)
 
 def test_scrape_page():
     """Test basique de scrape_page"""

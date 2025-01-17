@@ -10,6 +10,7 @@ from dotenv import load_dotenv
 import pypdf
 from docx import Document
 from datetime import datetime
+import ollama
 
 # Configuration de la page
 st.set_page_config(layout="wide")
@@ -169,7 +170,8 @@ with tabs[1]:
                     )
                     urls.extend(keyword_urls)
                     keyword_sources.extend([keyword] * len(keyword_urls))
-                    progress_bar.progress((idx + 1) / len(keywords))
+                    progress_value = min((idx + 1) / len(keywords), 1.0)
+                    progress_bar.progress(progress_value)
                     status_text.text(f"Recherche en cours... {idx + 1}/{len(keywords)}")
 
                 if urls:
@@ -193,7 +195,8 @@ with tabs[1]:
                             scraped_data.append(page_data)
                         else:
                             st.warning(f"Échec du scraping pour l'URL : {url}")
-                        progress_bar.progress(min((idx + 1) / min(len(urls), 12), 1.0))
+                        progress_value = min((idx + 1) / min(len(urls), 12), 1.0)
+                        progress_bar.progress(progress_value)
                         status_text.text(f"Scraping en cours... {min(idx + 1, 12)}/12")
 
                     if scraped_data:
@@ -232,7 +235,8 @@ with tabs[1]:
                                 "keyword_source": keyword,
                             }
                         )
-                        progress_bar.progress((idx + 1) / len(st.session_state["scraped_data"]))
+                        progress_value = min((idx + 1) / len(st.session_state["scraped_data"]), 1.0)
+                        progress_bar.progress(progress_value)
                         status_text.text(f"Génération des résumés en cours... {idx + 1}/{len(st.session_state['scraped_data'])}")
 
                     if summaries:
@@ -384,7 +388,8 @@ with tabs[1]:
                         )
                         new_urls.extend(keyword_urls)
                         new_keyword_sources.extend([keyword] * len(keyword_urls))
-                        progress_bar.progress((idx + 1) / len(new_keywords))
+                        progress_value = min((idx + 1) / len(new_keywords), 1.0)
+                        progress_bar.progress(progress_value)
                         status_text.text(f"Recherche en cours... {idx + 1}/{len(new_keywords)}")
 
                     if new_urls:
@@ -408,7 +413,8 @@ with tabs[1]:
                                 new_scraped_data.append(page_data)
                             else:
                                 st.warning(f"Échec du scraping pour l'URL : {url}")
-                            progress_bar.progress((idx + 1) / min(len(new_urls), 12))
+                            progress_value = min((idx + 1) / min(len(new_urls), 12), 1.0)
+                            progress_bar.progress(progress_value)
                             status_text.text(f"Scraping en cours... {min(idx + 1, 12)}/12")
 
                         if new_scraped_data:
@@ -447,7 +453,8 @@ with tabs[1]:
                                     "keyword_source": keyword,
                                 }
                             )
-                            progress_bar.progress((idx + 1) / len(st.session_state["scraped_data"]))
+                            progress_value = min((idx + 1) / len(st.session_state["scraped_data"]), 1.0)
+                            progress_bar.progress(progress_value)
                             status_text.text(f"Génération des résumés en cours... {idx + 1}/{len(st.session_state['scraped_data'])}")
 
                         if new_summaries:
@@ -491,7 +498,8 @@ with tabs[2]:
                         proposed_urls.extend([a["href"] for a in articles[:st.session_state.get("num_articles_sources", 10)]])
                     else:
                         st.error(f"Échec du scraping pour l'URL : {url}")
-                    progress_bar.progress((idx + 1) / len(source_urls))
+                    progress_value = min((idx + 1) / len(source_urls), 1.0)
+                    progress_bar.progress(progress_value)
                     status_text.text(f"Scraping des pages sources en cours... {idx + 1}/{len(source_urls)}")
 
                 if proposed_urls:
@@ -513,7 +521,8 @@ with tabs[2]:
                         scraped_data.append(page_data)
                     else:
                         st.warning(f"Échec du scraping pour l'URL : {url}")
-                    progress_bar.progress((idx + 1) / min(len(proposed_urls), 12))
+                    progress_value = min((idx + 1) / min(len(proposed_urls), 12), 1.0)
+                    progress_bar.progress(progress_value)
                     status_text.text(f"Scraping des articles proposés en cours... {min(idx + 1, 12)}/12")
 
                 if scraped_data:
@@ -550,7 +559,8 @@ with tabs[2]:
                             "image_url": page.image_url,
                         }
                     )
-                    progress_bar.progress((idx + 1) / len(scraped_data))
+                    progress_value = min((idx + 1) / len(scraped_data), 1.0)
+                    progress_bar.progress(progress_value)
                     status_text.text(f"Génération des résumés en cours... {idx + 1}/{len(scraped_data)}")
 
                 if summaries:
@@ -675,7 +685,8 @@ with tabs[3]:
                             }
                         )
                         st.success(f"Résumé généré pour : {page_data.title}")
-                        progress_bar.progress((idx + 1) / len(urls))
+                        progress_value = min((idx + 1) / len(urls), 1.0)
+                        progress_bar.progress(progress_value)
                         status_text.text(f"Génération des résumés en cours... {idx + 1}/{len(urls)}")
 
                     except Exception as e:
@@ -718,7 +729,8 @@ with tabs[3]:
                             }
                         )
                         st.success(f"Résumé généré pour : {uploaded_file.name}")
-                        progress_bar.progress((idx + len(urls) + 1) / (len(urls) + len(uploaded_files)))
+                        progress_value = min((idx + len(urls) + 1) / (len(urls) + len(uploaded_files)), 1.0)
+                        progress_bar.progress(progress_value)
                         status_text.text(f"Génération des résumés en cours... {idx + len(urls) + 1}/{len(urls) + len(uploaded_files)}")
 
                     except Exception as e:
@@ -798,7 +810,8 @@ with tabs[4]:
                     scraped_data.append(page_data)
                 else:
                     st.warning(f"Échec du scraping pour l'URL : {url}")
-                progress_bar.progress((idx + 1) / len(urls))
+                progress_value = min((idx + 1) / len(urls), 1.0)
+                progress_bar.progress(progress_value)
                 status_text.text(f"Scraping des articles en cours... {idx + 1}/{len(urls)}")
 
             # Scraping des fichiers
@@ -824,7 +837,8 @@ with tabs[4]:
                         image_url=None,
                     )
                     scraped_data.append(page)
-                    progress_bar.progress((idx + len(urls) + 1) / (len(urls) + len(uploaded_files)))
+                    progress_value = min((idx + len(urls) + 1) / (len(urls) + len(uploaded_files)), 1.0)
+                    progress_bar.progress(progress_value)
                     status_text.text(f"Scraping des articles en cours... {idx + len(urls) + 1}/{len(urls) + len(uploaded_files)}")
                 except Exception as e:
                     st.error(f"Erreur inattendue pour le fichier {uploaded_file.name} : {str(e)}")
@@ -944,7 +958,8 @@ with tabs[5]:
                         scraped_data.append(page_data)
                     else:
                         st.warning(f"Échec du scraping pour l'URL : {url}")
-                    progress_bar.progress((idx + 1) / len(urls))
+                    progress_value = min((idx + 1) / len(urls), 1.0)
+                    progress_bar.progress(progress_value)
                     status_text.text(f"Chargement des articles en cours... {idx + 1}/{len(urls)}")
 
         if uploaded_files:
@@ -973,7 +988,8 @@ with tabs[5]:
                             image_url=None,
                         )
                         scraped_data.append(page)
-                        progress_bar.progress((idx + 1) / len(uploaded_files))
+                        progress_value = min((idx + 1) / len(uploaded_files), 1.0)
+                        progress_bar.progress(progress_value)
                         status_text.text(f"Chargement des fichiers en cours... {idx + 1}/{len(uploaded_files)}")
 
                     except Exception as e:
